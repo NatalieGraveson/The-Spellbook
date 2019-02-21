@@ -1,16 +1,17 @@
 import Spell from "../models/spell.js";
 
-//private
-function formatUrl(url) {
-  return '//bcw-getter.herokuapp.com/?url=' + encodeURIComponent(url)
-}
+
 
 // @ts-ignore
 let _spellApi = axios.create({
-  baseURL: ''
+  baseURL: 'http://www.dnd5eapi.co/api/spells/'
 })
 
-let _sandbox = {}
+// @ts-ignore
+let _sandbox = axios.create({
+  baseURL: 'https://bcw-sandbox.herokuapp.com/api/Natalie/spells/'
+})
+
 
 let _state = {
   apiSpells: [],
@@ -32,14 +33,16 @@ function setState(prop, data) {
 //public
 export default class SpellService {
   learnSpell() {
-    _state.mySpells.push(_state.activeSpell)
-    setState('mySpells', _state.mySpells)
+    let spell = _state.activeSpell
+    _sandbox.post('', spell)
+      .then(res => {
+        this.getMySpellsData()
+      })
   }
   setActive(url) {
-    _spellApi.get(formatUrl(url))
+    _spellApi.get(url)
       .then(res => {
-        let data = new Spell(res.data)
-        setState('activeSpell', data)
+        setState('activeSpell', new Spell(res.data))
       })
   }
   addSubscriber(prop, fn) {
@@ -55,9 +58,16 @@ export default class SpellService {
   get MySpells() {
     return _state.mySpells
   }
+  getMySpellsData() {
+    _sandbox.get()
+      .then(res => {
+        let data = res.data.data.map(s => new Spell(s))
+        setState('mySpells', data)
+      })
+  }
 
   getApiSpells() {
-    _spellApi.get(formatUrl('http://www.dnd5eapi.co/api/spells'))
+    _spellApi.get()
       .then(res => {
         let data = res.data.results.map(s => new Spell(s))
         setState('apiSpells', data)

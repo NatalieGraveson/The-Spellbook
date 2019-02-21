@@ -35,6 +35,7 @@ export default class SpellController {
     _ss.addSubscriber('activeSpell', drawActive)
     _ss.addSubscriber('mySpells', drawMySpells)
     _ss.getApiSpells()
+    _ss.getMySpellsData()
   }
   setActive(url) {
     _ss.setActive(url)
